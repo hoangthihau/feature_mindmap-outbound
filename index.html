@@ -60,6 +60,9 @@ body{background:#0d0f14;color:#e0e4ef;font-family:'IBM Plex Sans',sans-serif;min
 .btn-clear:hover{border-color:#ef4444;color:#ef4444}
 .saved-indicator{font-size:10px;font-family:'IBM Plex Mono',monospace;color:#22c55e;opacity:0;transition:opacity .3s;flex:1;text-align:left}
 .saved-indicator.show{opacity:1}
+.sync-status{font-size:9px;font-family:'IBM Plex Mono',monospace;color:#3b82f6;opacity:0;transition:opacity .3s}
+.sync-status.show{opacity:1}
+.sync-error{color:#ef4444}
 
 /* PREVIEW CARDS */
 .preview-outcome{margin-top:9px;background:#091409;border:1px solid #1a3320;border-left:3px solid #22c55e;border-radius:7px;padding:10px 13px;font-size:12.5px;color:#86efac;line-height:1.75;white-space:pre-wrap;word-break:break-word}
@@ -89,9 +92,34 @@ body{background:#0d0f14;color:#e0e4ef;font-family:'IBM Plex Sans',sans-serif;min
   <div class="panel-body" id="panel-body"></div>
 </div>
 <script>
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXprz7eebcyarFKAfxDz8_qrO35eE6l4wjSkuRDaANoWC46-Czo6E_e9RsG75oLt1h/exec';
 const CX=705,CY=490;
 const userStore={};
-function getStore(id){if(!userStore[id])userStore[id]={outcome:'',measure:''};return userStore[id];}
+
+function getStore(id){
+  if(!userStore[id])userStore[id]={outcome:'',measure:''};
+  return userStore[id];
+}
+
+async function saveToGoogleSheets(field, nodeId, title, content){
+  if(!content.trim())return;
+  try{
+    const response=await fetch(GOOGLE_APPS_SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        type:field,
+        nodeId:nodeId,
+        title:title,
+        outcome:field==='outcome'?content:'',
+        measure:field==='measure'?content:''
+      })
+    });
+    return await response.json();
+  }catch(err){
+    console.error('Lỗi lưu Google Sheets:',err);
+    return null;
+  }
+}
 
 const NODES={
   center:{label:["Cải thiện","Pick/Sort","Check/Pack"],x:CX,y:CY,w:120,h:72,color:"#f59e0b",textColor:"#0d0f14",isCenter:true},
@@ -200,7 +228,6 @@ function buildSVG(){
   </defs>
   <rect x="-20" y="10" width="1450" height="1000" fill="url(#grid)" opacity=".35"/>`;
 
-  // Edges
   EDGES.forEach(e=>{
     const f=NODES[e.f],t=NODES[e.t];if(!f||!t)return;
     const color=NODES[e.t].color||"#666";
@@ -208,7 +235,6 @@ function buildSVG(){
     h+=`<path d="M${f.x},${f.y} C${mx},${f.y} ${mx},${t.y} ${t.x},${t.y}" fill="none" stroke="${color}" stroke-width="1.9" opacity=".38" stroke-linecap="round"/>`;
   });
 
-  // Nodes
   Object.entries(NODES).forEach(([id,n])=>{
     const {x,y,w}=n,nh=n.h,color=n.color,label=n.label;
     const hasClick=!!n.detail;
@@ -232,7 +258,6 @@ function buildSVG(){
       label.forEach((ln,i)=>{const ty=y-(label.length-1)*9+i*18;h+=`<text x="${x+5}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Sans,sans-serif" font-size="10.5" fill="#cdd6f4">${ln}</text>`;});
       const idL=id.replace('n3','3.');
       h+=`<text x="${x+w/2-7}" y="${y-nh/2+9}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="${color}" opacity=".6">${idL}</text>`;
-      // saved dot indicator
       h+=`<circle id="dot-${id}" cx="${x-w/2+10}" cy="${y-nh/2+9}" r="3.8" fill="#22c55e" opacity="0"/>`;
     }
     h+=`</g>`;
@@ -240,7 +265,6 @@ function buildSVG(){
   svg.innerHTML=h;
 }
 
-/* ── PANEL ── */
 let activeId=null;
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -263,19 +287,18 @@ function showDetail(id){
   }
   h+=`<hr class="divider">`;
 
-  /* Outcome input */
   h+=`<div class="section-title" style="color:#22c55e">🎯 Outcome / Impact kỳ vọng</div>
   <div class="input-block">
     <textarea id="ta-outcome" placeholder="Nhập outcome kỳ vọng sau khi feature được triển khai...
 Ví dụ: Giảm 30% case sai SKU, giảm escalation lên Lead, tiết kiệm X phút/ca...">${esc(store.outcome)}</textarea>`;
   if(store.outcome) h+=`<div class="preview-outcome"><div class="preview-label" style="color:#22c55e">Đã lưu</div>${esc(store.outcome)}</div>`;
   h+=`<div class="input-row">
+    <span class="sync-status" id="ss-outcome"></span>
     <span class="saved-indicator" id="si-outcome"></span>
     <button class="btn-clear" onclick="clearF('outcome')">Xoá</button>
     <button class="btn-save" onclick="saveF('outcome')" style="background:#14401a;border-color:#22863a;color:#86efac">💾 Lưu Outcome</button>
   </div></div>`;
 
-  /* Measure input */
   h+=`<div class="section-title" style="color:#3b82f6;margin-top:20px">📐 Cách đo lường bằng data</div>
   <div class="input-block">
     <textarea id="ta-measure" placeholder="Nhập metric &amp; cách đo lường cụ thể...
@@ -286,6 +309,7 @@ Ví dụ:
 • Target: giảm từ X% → Y%">${esc(store.measure)}</textarea>`;
   if(store.measure) h+=`<div class="preview-measure"><div class="preview-label" style="color:#3b82f6">Đã lưu</div>${esc(store.measure)}</div>`;
   h+=`<div class="input-row">
+    <span class="sync-status" id="ss-measure"></span>
     <span class="saved-indicator" id="si-measure"></span>
     <button class="btn-clear" onclick="clearF('measure')">Xoá</button>
     <button class="btn-save" onclick="saveF('measure')">💾 Lưu Đo lường</button>
@@ -296,24 +320,44 @@ Ví dụ:
   document.getElementById('overlay').classList.add('show');
 }
 
-function saveF(field){
+async function saveF(field){
   if(!activeId)return;
   const store=getStore(activeId);
   const ta=document.getElementById(`ta-${field}`);
   if(!ta)return;
-  store[field]=ta.value.trim();
+  const content=ta.value.trim();
+  store[field]=content;
+  const n=NODES[activeId];
+  
   const ind=document.getElementById(`si-${field}`);
+  const syn=document.getElementById(`ss-${field}`);
+  
   if(ind){ind.textContent='✓ Đã lưu';ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),2200);}
+  
+  if(syn){syn.textContent='⊙ Đang lưu...';syn.classList.add('show');}
+  
+  const result=await saveToGoogleSheets(field, activeId, n.label.join(' / '), content);
+  
+  if(syn){
+    if(result){
+      syn.textContent='✓ Đã sync';
+      setTimeout(()=>syn.classList.remove('show'),2200);
+    }else{
+      syn.textContent='✗ Lỗi sync';
+      syn.classList.add('sync-error');
+      setTimeout(()=>{syn.classList.remove('show','sync-error')},3000);
+    }
+  }
+  
   updateDot(activeId);
-  // re-render preview only
   const prev=document.querySelector(field==='outcome'?'.preview-outcome':'.preview-measure');
-  if(store[field]){
-    if(prev){prev.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(store[field])}`;}
+  if(content){
+    if(prev){prev.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(content)}`;}
     else {
       const block=ta.closest('.input-block');
       const div=document.createElement('div');
       div.className=field==='outcome'?'preview-outcome':'preview-measure';
-      div.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(store[field])}`;
+      div.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(content)}`;
       block.insertBefore(div,block.querySelector('.input-row'));
     }
   }
