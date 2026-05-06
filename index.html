@@ -1,138 +1,362 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feature Mindmap - Outbound</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            max-width: 600px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        
-        .subtitle {
-            color: #667eea;
-            font-size: 1.2em;
-            margin-bottom: 30px;
-        }
-        
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        
-        .features {
-            text-align: left;
-            margin: 30px 0;
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        
-        .features h2 {
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .features ul {
-            list-style: none;
-        }
-        
-        .features li {
-            padding: 10px 0;
-            color: #555;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .features li:last-child {
-            border-bottom: none;
-        }
-        
-        .features li:before {
-            content: "✓ ";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-            margin-top: 20px;
-        }
-        
-        .cta-button:hover {
-            transform: scale(1.05);
-        }
-        
-        footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            color: #999;
-            font-size: 0.9em;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Request Mind Map — SPX Outbound</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f14;color:#e0e4ef;font-family:'IBM Plex Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+.header{text-align:center;padding:20px 20px 10px;border-bottom:1px solid #1e2535}
+.header h1{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:#f59e0b;text-transform:uppercase;margin-bottom:5px}
+.header h2{font-size:18px;font-weight:700;color:#f1f5ff}
+.header p{font-size:11.5px;color:#6b7a99;margin-top:4px}
+.legend{display:flex;justify-content:center;gap:10px;padding:10px 20px;flex-wrap:wrap;border-bottom:1px solid #1e2535}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;padding:4px 11px;border-radius:4px;border:1px solid transparent;transition:all .2s}
+.legend-item:hover,.legend-item.active{background:#1a1f2e;border-color:currentColor}
+.dot{width:9px;height:9px;border-radius:50%}
+.lp0{color:#ef4444}.lp1{color:#f97316}.lp2{color:#3b82f6}.lp3{color:#22c55e}.lgoal{color:#f59e0b}
+#mindmap-canvas{width:100%;overflow:auto;padding:10px 0 30px}
+#mindmap-svg{display:block;margin:0 auto;min-width:1100px}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+#overlay.show{display:block}
+#detail-panel{position:fixed;right:-490px;top:0;width:470px;height:100vh;background:#0f1219;border-left:2px solid #222b3e;overflow-y:auto;transition:right .32s cubic-bezier(.4,0,.2,1);z-index:100}
+#detail-panel.open{right:0}
+.panel-header{padding:18px 18px 14px;border-bottom:1px solid #1e2535;display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:#0f1219;z-index:10}
+.panel-header h3{font-size:13.5px;font-weight:700;line-height:1.5;flex:1;padding-right:12px}
+.close-btn{background:#1e2535;border:none;color:#6b7a99;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.close-btn:hover{background:#2a3045;color:#e0e4ef}
+.panel-body{padding:16px 18px 40px}
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-bottom:14px}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6b7a99;margin:18px 0 7px;display:flex;align-items:center;gap:6px}
+.panel-body p,.panel-body li{font-size:13px;line-height:1.75;color:#b0bbd4}
+.panel-body ul{padding-left:16px}
+.panel-body ul li{margin-bottom:4px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:8px}
+.meta-item{background:#161b28;border-radius:6px;padding:9px 11px;border:1px solid #242d42}
+.meta-label{font-size:9.5px;color:#6b7a99;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-bottom:3px}
+.meta-value{font-size:12.5px;font-weight:600;color:#f1f5ff}
+.hi{color:#ef4444}.me{color:#f97316}.lo{color:#22c55e}
+.ac-item{display:flex;gap:8px;margin-bottom:6px;font-size:12.5px;color:#b0bbd4;line-height:1.6}
+.ac-icon{color:#22c55e;flex-shrink:0;margin-top:2px}
+.divider{border:none;border-top:1px solid #1e2535;margin:20px 0}
+
+/* INPUT SECTION */
+.input-block{background:#12182a;border:1px solid #222d44;border-radius:9px;padding:13px 14px;margin-top:8px}
+.input-block textarea{
+  width:100%;background:#0a0e1a;border:1px solid #2a3348;
+  border-radius:6px;color:#d4daf0;
+  font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;line-height:1.7;
+  padding:10px 12px;resize:vertical;min-height:88px;outline:none;
+  transition:border-color .2s;
+}
+.input-block textarea:focus{border-color:#3b82f6}
+.input-block textarea::placeholder{color:#3a4760;font-style:italic}
+.input-row{display:flex;justify-content:flex-end;margin-top:9px;gap:8px;align-items:center}
+.btn-save{background:#1a3a6e;border:1px solid #2557a7;color:#93c5fd;font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.8px;padding:5px 14px;border-radius:5px;cursor:pointer;transition:all .2s}
+.btn-save:hover{background:#2563b0;color:#dbeafe}
+.btn-clear{background:transparent;border:1px solid #2a3348;color:#4b5875;font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.8px;padding:5px 11px;border-radius:5px;cursor:pointer;transition:all .2s}
+.btn-clear:hover{border-color:#ef4444;color:#ef4444}
+.saved-indicator{font-size:10px;font-family:'IBM Plex Mono',monospace;color:#22c55e;opacity:0;transition:opacity .3s;flex:1;text-align:left}
+.saved-indicator.show{opacity:1}
+
+/* PREVIEW CARDS */
+.preview-outcome{margin-top:9px;background:#091409;border:1px solid #1a3320;border-left:3px solid #22c55e;border-radius:7px;padding:10px 13px;font-size:12.5px;color:#86efac;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.preview-measure{margin-top:9px;background:#080d1a;border:1px solid #1a2540;border-left:3px solid #3b82f6;border-radius:7px;padding:10px 13px;font-size:12.5px;color:#93c5fd;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.preview-label{font-size:9px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;opacity:.7}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧠 Feature Mindmap</h1>
-        <p class="subtitle">Outbound</p>
-        
-        <p>Welcome to the Feature Mindmap project! This is a powerful tool designed to help you visualize, organize, and manage your project features effectively.</p>
-        
-        <div class="features">
-            <h2>Key Features</h2>
-            <ul>
-                <li>Visual mindmap representation</li>
-                <li>Easy feature organization</li>
-                <li>Outbound connection management</li>
-                <li>Interactive and intuitive interface</li>
-                <li>Real-time collaboration support</li>
-            </ul>
-        </div>
-        
-        <p>Get started by exploring the repository or diving into the documentation to learn more about how to use this tool for your projects.</p>
-        
-        <a href="https://github.com/hoangthihau/feature_mindmap-outbound" class="cta-button">View on GitHub</a>
-        
-        <footer>
-            <p>&copy; 2026 Feature Mindmap - Outbound. All rights reserved.</p>
-        </footer>
-    </div>
+<div class="header">
+  <h1>SPX Logistics · Outbound Warehouse · Feature Request</h1>
+  <h2>Cải thiện giao diện &amp; kiểm soát thao tác — Pick / Sort / Check / Pack</h2>
+  <p>Click vào node để xem chi tiết &amp; nhập Outcome / Cách đo lường &nbsp;·&nbsp; Filter priority qua legend bên dưới</p>
+</div>
+<div class="legend">
+  <div class="legend-item lgoal active" onclick="filterNodes('all',this)"><div class="dot" style="background:#f59e0b"></div>Tất cả</div>
+  <div class="legend-item lp0" onclick="filterNodes('P0',this)"><div class="dot" style="background:#ef4444"></div>P0 — Kiểm soát quyền</div>
+  <div class="legend-item lp1" onclick="filterNodes('P1',this)"><div class="dot" style="background:#f97316"></div>P1 — Giảm sai SKU/rổ</div>
+  <div class="legend-item lp2" onclick="filterNodes('P2',this)"><div class="dot" style="background:#3b82f6"></div>P2 — Truy vết &amp; kiểm tra</div>
+  <div class="legend-item lp3" onclick="filterNodes('P3',this)"><div class="dot" style="background:#22c55e"></div>P3 — UX &amp; Hiệu suất</div>
+</div>
+<div id="mindmap-canvas">
+  <svg id="mindmap-svg" viewBox="-20 10 1450 1000" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:1400px"></svg>
+</div>
+<div id="overlay" onclick="closePanel()"></div>
+<div id="detail-panel">
+  <div class="panel-header"><h3 id="panel-title">—</h3><button class="close-btn" onclick="closePanel()">✕</button></div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+<script>
+const CX=705,CY=490;
+const userStore={};
+function getStore(id){if(!userStore[id])userStore[id]={outcome:'',measure:''};return userStore[id];}
+
+const NODES={
+  center:{label:["Cải thiện","Pick/Sort","Check/Pack"],x:CX,y:CY,w:120,h:72,color:"#f59e0b",textColor:"#0d0f14",isCenter:true},
+  goal:{label:["🎯 Mục tiêu","Vận Hành"],x:705,y:88,w:138,h:52,color:"#f59e0b",priority:"goal",
+    detail:{title:"Mục tiêu tổng thể của Feature Request",priority:"CORE",badge:"#f59e0b",
+      problem:"Không chỉ thay đổi UI, mà là kiểm soát hành vi thao tác và giảm rủi ro vận hành từ gốc rễ.",
+      goals:["Giảm thao tác sai: nhầm SKU / rổ / grid","Tăng khả năng tự kiểm tra của nhân viên vận hành","Hạn chế action rủi ro bởi sai vai trò (PT vs CAP/Lead Up)","Tăng khả năng truy vết khi phát sinh issue"],
+      ac:null,impact:null,urgency:null,effort:null}},
+
+  p0:{label:["⛔ P0","Kiểm soát Quyền"],x:210,y:258,w:140,h:52,color:"#ef4444",priority:"P0",detail:null},
+  n31:{label:["3.1 Khóa End Task","Sort by Item"],x:62,y:128,w:155,h:54,color:"#ef4444",priority:"P0",
+    detail:{title:"3.1 — Khóa quyền End Task trong Sort by Item",priority:"P0",badge:"#ef4444",
+      problem:"Sorter (PT) có thể tự ý End Task khi task chưa hoàn tất → đóng sai trạng thái, gây thiếu hàng, lệch rổ/grid, tốn chi phí investigation.",
+      goals:["Chỉ CAP / Lead Up mới có quyền End Task (tương tự Skip trong Pick)","Ẩn hoặc disable button End Task với PT","Backend từ chối request nếu role không hợp lệ — không chỉ ẩn UI"],
+      ac:["Sorter PT không thể nhấn End Task từ UI","API/backend từ chối request nếu role sai","Audit log: người thao tác, thời điểm, task ID khi CAP/Lead Up End Task"],
+      impact:"High",urgency:"High",effort:"Medium"}},
+  n32:{label:["3.2 Khóa Incomplete","Order — Checking"],x:62,y:345,w:155,h:54,color:"#ef4444",priority:"P0",
+    detail:{title:"3.2 — Khóa quyền Incomplete Order trong Checking Process",priority:"P0",badge:"#ef4444",
+      problem:"Checker/Sorter PT có thể thao tác Incomplete Order dù đơn chưa hoàn tất → hoàn tất sai trạng thái đơn, mất truy vết, gây claim.",
+      goals:["Chỉ CAP / Lead Up được dùng Incomplete Order","PT chỉ thao tác theo flow chuẩn","Khi CAP/Lead Up thao tác: yêu cầu ghi reason để audit"],
+      ac:["PT không thao tác Incomplete Order từ UI","API/backend từ chối nếu role không hợp lệ","Hệ thống ghi nhận reason + actor khi exception"],
+      impact:"High",urgency:"High",effort:"Medium"}},
+  n33:{label:["3.3 Ẩn Re-Checking","& Re-print AWB"],x:62,y:562,w:155,h:54,color:"#ef4444",priority:"P0",
+    detail:{title:"3.3 — Ẩn / hạn chế Re-Checking & Re-print AWB với PT",priority:"P0",badge:"#ef4444",
+      problem:"PT thấy và có thể thao tác Re-Checking & Re-print Checked Order AWB → sai trạng thái, thao tác lặp ngoài ý muốn.",
+      goals:["Ẩn hoặc disable cả hai chức năng với PT","Chỉ hiển thị cho CAP / Lead Up / Admin","Nếu disable: hiện tooltip lý do rõ ràng","Backend chặn dù UI đã ẩn (chống bypass)"],
+      ac:["PT không thấy hoặc không thao tác được Re-Checking & Re-print AWB","Nếu disable: 'Chỉ CAP / Lead Up được phép'","Backend reject khi bị bypass trực tiếp"],
+      impact:"High",urgency:"High",effort:"Low–Medium"}},
+
+  p1:{label:["🚨 P1","Giảm Sai SKU/Rổ"],x:210,y:728,w:140,h:52,color:"#f97316",priority:"P1",detail:null},
+  n34:{label:["3.4 Wrong SKU","Scanned Alert"],x:62,y:665,w:155,h:54,color:"#f97316",priority:"P1",
+    detail:{title:"3.4 — Wrong SKU Scanned: Hiển thị rõ SKU cần lấy và mã đã scan sai",priority:"P1",badge:"#f97316",
+      problem:"Khi scan sai SKU, thông báo lỗi hiện tại chưa đủ để picker biết nhầm hoàn toàn hay chỉ sai mã variant → phải escalate lên Lead.",
+      goals:["Màn hình lỗi: SKU ID cần pick + UPC cần pick + Mã vừa scan sai","Thêm tên sản phẩm / ảnh sản phẩm nếu có trong system","Màu đỏ rõ ràng, phân biệt với trạng thái thường"],
+      ac:null,impact:"High",urgency:"High",effort:"Medium"}},
+  n35:{label:["3.5 Nổi bật","Picking Location"],x:62,y:795,w:155,h:54,color:"#f97316",priority:"P1",
+    detail:{title:"3.5 — Flow Pick: Làm nổi bật Picking Location thay vì Next Location",priority:"P1",badge:"#f97316",
+      problem:"Next Location đang nổi bật hơn Current Picking Location → picker nhầm vị trí, pick sai sản phẩm, tạo lỗi dây chuyền sang Sort/Check.",
+      goals:["Current Picking Location: font lớn nhất, màu nổi nhất, đầu tiên","Next Location: thông tin phụ, nhỏ hơn, mờ hơn","Label rõ: 'Current Picking Location' vs 'Next Location'"],
+      ac:null,impact:"High",urgency:"Medium–High",effort:"Low–Medium"}},
+  n36:{label:["3.6 Scan rổ khi","Picking Complete"],x:62,y:920,w:155,h:54,color:"#f97316",priority:"P1",
+    detail:{title:"3.6 — Picking Complete: Yêu cầu scan lại rổ con đầu và cuối",priority:"P1",badge:"#f97316",
+      problem:"Kết thúc task không xác nhận lại rổ → nguy cơ lấy nhầm rổ, bỏ sót hàng khi chuyển sang task tiếp theo.",
+      goals:["Bắt buộc scan rổ con của hàng đầu tiên","Bắt buộc scan rổ con của hàng cuối cùng","Hiển thị danh sách SKU/UPC/qty trong rổ để tự kiểm tra","Cảnh báo rõ + yêu cầu scan lại nếu scan sai rổ"],
+      ac:null,impact:"High",urgency:"Medium",effort:"Medium–High"}},
+
+  p2:{label:["🔍 P2","Truy vết & Kiểm tra"],x:1200,y:258,w:148,h:52,color:"#3b82f6",priority:"P2",detail:null},
+  n37:{label:["3.7 Historical Pick","+ UPC Detail"],x:1348,y:128,w:155,h:54,color:"#3b82f6",priority:"P2",
+    detail:{title:"3.7 — Historical Picking Items: Hiển thị UPC và chi tiết SKU",priority:"P2",badge:"#3b82f6",
+      problem:"Danh sách historical picking thiếu UPC và chi tiết SKU → khó phân biệt sản phẩm đã pick/chưa pick khi có dispute.",
+      goals:["Bổ sung UPC vào danh sách historical picking","Click để xem chi tiết SKU (tên, variant, barcode)","Nếu có: ảnh sản phẩm để tránh nhầm lẫn"],
+      ac:null,impact:"Medium–High",urgency:"Medium",effort:"Medium"}},
+  n38:{label:["3.8 Grid/Basket","Drill-down"],x:1348,y:345,w:155,h:54,color:"#3b82f6",priority:"P2",
+    detail:{title:"3.8 — Link Basket / Grid List: Drill-down chi tiết sản phẩm trong grid & rổ",priority:"P2",badge:"#3b82f6",
+      problem:"Sorter cần kiểm tra sản phẩm trong rổ có khớp grid không nhưng thiếu khả năng xem chi tiết → phụ thuộc vào Lead.",
+      goals:["Luôn hiển thị Grid List đầy đủ (không collapse)","Click vào grid/basket → xem: SKU ID, UPC, Tên, Qty, Trạng thái, Mapping","Sorter tự kiểm tra được, giảm escalation lên Lead"],
+      ac:null,impact:"Medium–High",urgency:"Medium",effort:"Medium"}},
+  n39:{label:["3.9 Sorting Complete","Summary View"],x:1348,y:562,w:155,h:54,color:"#3b82f6",priority:"P2",
+    detail:{title:"3.9 — Sorting Complete: Hiển thị lại danh sách Grid & Basket",priority:"P2",badge:"#3b82f6",
+      problem:"Sau khi complete sort, không xem được tổng quan grid/rổ → khó kiểm tra khi phát hiện vấn đề sau đó.",
+      goals:["Sau complete: hiển thị summary Grid + Basket đầy đủ","Số SKU / qty trong từng basket","Cho phép click xem chi tiết từng rổ"],
+      ac:null,impact:"Medium",urgency:"Medium",effort:"Medium"}},
+
+  p3:{label:["✨ P3","UX & Hiệu suất"],x:1200,y:728,w:138,h:52,color:"#22c55e",priority:"P3",detail:null},
+  n310:{label:["3.10 Picked Qty","vs Expected Qty"],x:1348,y:665,w:155,h:54,color:"#22c55e",priority:"P3",
+    detail:{title:"3.10 — Pick: Hiển thị Picked Qty song song Expected Qty",priority:"P3",badge:"#22c55e",
+      problem:"Picker không dễ biết đã pick bao nhiêu so với cần pick → không theo dõi được tiến độ real-time.",
+      goals:["Hiển thị: Picked: X / Expected: Y trong màn hình pick","Thêm Remaining Qty nếu có thể","Cải thiện awareness tiến độ ngay trong flow"],
+      ac:null,impact:"Medium",urgency:"Medium",effort:"Low"}},
+  n311:{label:["3.11 Basket Type","& Size — Sort Start"],x:1348,y:795,w:155,h:54,color:"#22c55e",priority:"P3",
+    detail:{title:"3.11 — Sort Start Task: Bổ sung loại rổ và kích thước rổ",priority:"P3",badge:"#22c55e",
+      problem:"Sorter thiếu thông tin loại/kích thước rổ → chọn sai rổ, thiếu space, phải đổi rổ nhiều lần, tăng nguy cơ trộn hàng.",
+      goals:["Màn hình Start Task: Basket Type + Basket Size","Gợi ý số lượng rổ nếu có dữ liệu","Cảnh báo nếu task có nhiều SKU hoặc hàng bulky"],
+      ac:null,impact:"Medium",urgency:"Low–Medium",effort:"Medium–High"}},
+  n312:{label:["3.12 Popup Xác Nhận","Đơn Số Lượng Lớn"],x:1348,y:920,w:155,h:54,color:"#22c55e",priority:"P3",
+    detail:{title:"3.12 — Packing: Popup xác nhận với đơn số lượng lớn",priority:"P3",badge:"#22c55e",
+      problem:"Đơn số lượng lớn dễ bị packer thao tác nhanh gây thiếu/thừa hàng. Cần cảnh báo nhưng không làm chậm flow bình thường.",
+      goals:["Popup chỉ trigger khi vượt threshold (qty, SKU count, giá trị đơn...)","Xác nhận bằng click / Space / Enter","Không trigger lặp lại cho cùng một bước"],
+      ac:["Popup chỉ xuất hiện khi vượt threshold đã thống nhất","Hiển thị qty/order context rõ ràng","Người dùng xác nhận bằng click, Space hoặc Enter","Không trigger lặp lại cho cùng một bước"],
+      impact:"Medium",urgency:"Low–Medium",effort:"Low–Medium"}}
+};
+
+const EDGES=[
+  {f:"center",t:"goal"},{f:"center",t:"p0"},{f:"center",t:"p1"},{f:"center",t:"p2"},{f:"center",t:"p3"},
+  {f:"p0",t:"n31"},{f:"p0",t:"n32"},{f:"p0",t:"n33"},
+  {f:"p1",t:"n34"},{f:"p1",t:"n35"},{f:"p1",t:"n36"},
+  {f:"p2",t:"n37"},{f:"p2",t:"n38"},{f:"p2",t:"n39"},
+  {f:"p3",t:"n310"},{f:"p3",t:"n311"},{f:"p3",t:"n312"}
+];
+const PMAP={n31:"P0",n32:"P0",n33:"P0",n34:"P1",n35:"P1",n36:"P1",n37:"P2",n38:"P2",n39:"P2",n310:"P3",n311:"P3",n312:"P3",p0:"P0",p1:"P1",p2:"P2",p3:"P3",goal:"goal"};
+
+function buildSVG(){
+  const svg=document.getElementById('mindmap-svg');
+  const BRANCH_IDS=new Set(["goal","p0","p1","p2","p3"]);
+  let h=`<defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0L0 0 0 40" fill="none" stroke="#1e2535" stroke-width="0.4"/>
+    </pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#000" flood-opacity=".6"/>
+    </filter>
+    <filter id="glow-c" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="-20" y="10" width="1450" height="1000" fill="url(#grid)" opacity=".35"/>`;
+
+  // Edges
+  EDGES.forEach(e=>{
+    const f=NODES[e.f],t=NODES[e.t];if(!f||!t)return;
+    const color=NODES[e.t].color||"#666";
+    const mx=(f.x+t.x)/2;
+    h+=`<path d="M${f.x},${f.y} C${mx},${f.y} ${mx},${t.y} ${t.x},${t.y}" fill="none" stroke="${color}" stroke-width="1.9" opacity=".38" stroke-linecap="round"/>`;
+  });
+
+  // Nodes
+  Object.entries(NODES).forEach(([id,n])=>{
+    const {x,y,w}=n,nh=n.h,color=n.color,label=n.label;
+    const hasClick=!!n.detail;
+    const isBranch=BRANCH_IDS.has(id);
+    const pAttr=PMAP[id]?`data-priority="${PMAP[id]}"`:"";
+    const cAttr=hasClick?`onclick="showDetail('${id}')" style="cursor:pointer"`:"";
+    h+=`<g id="node-${id}" ${pAttr} ${cAttr}>`;
+
+    if(n.isCenter){
+      h+=`<ellipse cx="${x}" cy="${y}" rx="${w/2+20}" ry="${nh/2+20}" fill="#f59e0b" opacity=".08" filter="url(#glow-c)"/>`;
+      h+=`<rect x="${x-w/2}" y="${y-nh/2}" width="${w}" height="${nh}" rx="13" fill="#f59e0b" filter="url(#sh)"/>`;
+      h+=`<rect x="${x-w/2+2}" y="${y-nh/2+2}" width="${w-4}" height="${nh-4}" rx="11" fill="#b45309" opacity=".22"/>`;
+      label.forEach((ln,i)=>{const ty=y-(label.length-1)*10+i*20;h+=`<text x="${x}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#0d0f14">${ln}</text>`;});
+    } else if(isBranch){
+      h+=`<rect x="${x-w/2}" y="${y-nh/2}" width="${w}" height="${nh}" rx="9" fill="${color}" opacity=".13" stroke="${color}" stroke-width="1.8"/>`;
+      label.forEach((ln,i)=>{const ty=y-(label.length-1)*9+i*18;h+=`<text x="${x}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Sans,sans-serif" font-size="11.5" font-weight="700" fill="${color}">${ln}</text>`;});
+    } else {
+      h+=`<rect x="${x-w/2}" y="${y-nh/2}" width="${w}" height="${nh}" rx="7" fill="#131929" stroke="${color}" stroke-width="1.2" filter="url(#sh)"/>`;
+      h+=`<rect x="${x-w/2}" y="${y-nh/2}" width="3.5" height="${nh}" rx="2" fill="${color}" opacity=".9"/>`;
+      h+=`<rect x="${x-w/2}" y="${y-nh/2}" width="${w}" height="${nh}" rx="7" fill="${color}" opacity="0" onmouseenter="this.setAttribute('opacity','0.07')" onmouseleave="this.setAttribute('opacity','0')"/>`;
+      label.forEach((ln,i)=>{const ty=y-(label.length-1)*9+i*18;h+=`<text x="${x+5}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Sans,sans-serif" font-size="10.5" fill="#cdd6f4">${ln}</text>`;});
+      const idL=id.replace('n3','3.');
+      h+=`<text x="${x+w/2-7}" y="${y-nh/2+9}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="${color}" opacity=".6">${idL}</text>`;
+      // saved dot indicator
+      h+=`<circle id="dot-${id}" cx="${x-w/2+10}" cy="${y-nh/2+9}" r="3.8" fill="#22c55e" opacity="0"/>`;
+    }
+    h+=`</g>`;
+  });
+  svg.innerHTML=h;
+}
+
+/* ── PANEL ── */
+let activeId=null;
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showDetail(id){
+  activeId=id;
+  const n=NODES[id];if(!n||!n.detail)return;
+  const d=n.detail,color=d.badge||"#6b7a99",store=getStore(id);
+  document.getElementById('panel-title').textContent=d.title;
+  const iCls=d.impact==='High'?'hi':d.impact&&d.impact.startsWith('Med')?'me':d.impact?'lo':'';
+  let h=`<span class="badge" style="background:${color}1a;color:${color};border:1px solid ${color}40">${d.priority}</span>`;
+  if(d.problem) h+=`<div class="section-title">🔴 Vấn đề hiện tại</div><p>${d.problem}</p>`;
+  if(d.goals&&d.goals.length){h+=`<div class="section-title">✅ Đề xuất / Mục tiêu</div><ul>`;d.goals.forEach(g=>{h+=`<li>${g}</li>`;});h+=`</ul>`;}
+  if(d.ac&&d.ac.length){h+=`<div class="section-title">📋 Acceptance Criteria</div>`;d.ac.forEach(a=>{h+=`<div class="ac-item"><span class="ac-icon">✓</span><span>${a}</span></div>`;});}
+  if(d.impact||d.urgency||d.effort){
+    h+=`<div class="section-title">📊 Metadata</div><div class="meta-grid">`;
+    if(d.impact) h+=`<div class="meta-item"><div class="meta-label">IMPACT</div><div class="meta-value ${iCls}">${d.impact}</div></div>`;
+    if(d.urgency) h+=`<div class="meta-item"><div class="meta-label">URGENCY</div><div class="meta-value">${d.urgency}</div></div>`;
+    if(d.effort) h+=`<div class="meta-item"><div class="meta-label">EFFORT</div><div class="meta-value">${d.effort}</div></div>`;
+    h+=`</div>`;
+  }
+  h+=`<hr class="divider">`;
+
+  /* Outcome input */
+  h+=`<div class="section-title" style="color:#22c55e">🎯 Outcome / Impact kỳ vọng</div>
+  <div class="input-block">
+    <textarea id="ta-outcome" placeholder="Nhập outcome kỳ vọng sau khi feature được triển khai...
+Ví dụ: Giảm 30% case sai SKU, giảm escalation lên Lead, tiết kiệm X phút/ca...">${esc(store.outcome)}</textarea>`;
+  if(store.outcome) h+=`<div class="preview-outcome"><div class="preview-label" style="color:#22c55e">Đã lưu</div>${esc(store.outcome)}</div>`;
+  h+=`<div class="input-row">
+    <span class="saved-indicator" id="si-outcome"></span>
+    <button class="btn-clear" onclick="clearF('outcome')">Xoá</button>
+    <button class="btn-save" onclick="saveF('outcome')" style="background:#14401a;border-color:#22863a;color:#86efac">💾 Lưu Outcome</button>
+  </div></div>`;
+
+  /* Measure input */
+  h+=`<div class="section-title" style="color:#3b82f6;margin-top:20px">📐 Cách đo lường bằng data</div>
+  <div class="input-block">
+    <textarea id="ta-measure" placeholder="Nhập metric &amp; cách đo lường cụ thể...
+Ví dụ:
+• KPI: Wrong SKU rate (%) = Số đơn sai SKU / Tổng đơn × 100
+• Nguồn data: WMS scan log, Order error report
+• Baseline: đo 1 tuần trước deploy, so sánh sau 2 tuần
+• Target: giảm từ X% → Y%">${esc(store.measure)}</textarea>`;
+  if(store.measure) h+=`<div class="preview-measure"><div class="preview-label" style="color:#3b82f6">Đã lưu</div>${esc(store.measure)}</div>`;
+  h+=`<div class="input-row">
+    <span class="saved-indicator" id="si-measure"></span>
+    <button class="btn-clear" onclick="clearF('measure')">Xoá</button>
+    <button class="btn-save" onclick="saveF('measure')">💾 Lưu Đo lường</button>
+  </div></div>`;
+
+  document.getElementById('panel-body').innerHTML=h;
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function saveF(field){
+  if(!activeId)return;
+  const store=getStore(activeId);
+  const ta=document.getElementById(`ta-${field}`);
+  if(!ta)return;
+  store[field]=ta.value.trim();
+  const ind=document.getElementById(`si-${field}`);
+  if(ind){ind.textContent='✓ Đã lưu';ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),2200);}
+  updateDot(activeId);
+  // re-render preview only
+  const prev=document.querySelector(field==='outcome'?'.preview-outcome':'.preview-measure');
+  if(store[field]){
+    if(prev){prev.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(store[field])}`;}
+    else {
+      const block=ta.closest('.input-block');
+      const div=document.createElement('div');
+      div.className=field==='outcome'?'preview-outcome':'preview-measure';
+      div.innerHTML=`<div class="preview-label" style="color:${field==='outcome'?'#22c55e':'#3b82f6'}">Đã lưu</div>${esc(store[field])}`;
+      block.insertBefore(div,block.querySelector('.input-row'));
+    }
+  }
+}
+
+function clearF(field){
+  if(!activeId)return;
+  const store=getStore(activeId);
+  store[field]='';
+  const ta=document.getElementById(`ta-${field}`);
+  if(ta)ta.value='';
+  const prev=document.querySelector(field==='outcome'?'.preview-outcome':'.preview-measure');
+  if(prev)prev.remove();
+  updateDot(activeId);
+}
+
+function updateDot(id){
+  const dot=document.getElementById(`dot-${id}`);
+  if(!dot)return;
+  const s=getStore(id);
+  dot.setAttribute('opacity',(s.outcome||s.measure)?'1':'0');
+}
+
+function closePanel(){
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  activeId=null;
+}
+
+function filterNodes(priority,el){
+  document.querySelectorAll('.legend-item').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  Object.keys(NODES).forEach(id=>{
+    const g=document.getElementById(`node-${id}`);
+    if(!g)return;
+    if(id==='center'){g.style.opacity='1';return;}
+    const p=PMAP[id]||'';
+    g.style.opacity=(priority==='all'||p===priority)?'1':'0.1';
+    g.style.transition='opacity .25s';
+  });
+}
+
+buildSVG();
+</script>
 </body>
 </html>
